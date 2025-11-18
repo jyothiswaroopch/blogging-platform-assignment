@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. User Service & Database
+  # ==========================================
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8081:8081" # Map local port 8081 to container port 8081
+    depends_on:
+      - user-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/user_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  user-db:
+    image: postgres:13
+    container_name: user-db
+    environment:
+      - POSTGRES_DB=user_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5431:5432" # Exposed on 5431 to avoid conflicts if you have local Postgres
+
+  # ==========================================
+  # 2. Post Service & Database
+  # ==========================================
+  post-service:
+    build: ./post-service
+    container_name: post-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - post-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://post-db:5432/post_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  post-db:
+    image: postgres:13
+    container_name: post-db
+    environment:
+      - POSTGRES_DB=post_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+
+  # ==========================================
+  # 3. Comment Service & Database
+  # ==========================================
+  comment-service:
+    build: ./comment-service
+    container_name: comment-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - comment-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://comment-db:5432/comment_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  comment-db:
+    image: postgres:13
+    container_name: comment-db
+    environment:
+      - POSTGRES_DB=comment_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432"
+
+  # ==========================================
+  # 4. PGAdmin (Database GUI) - Optional
+  # ==========================================
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "8888:80"
+    depends_on:
+      - user-db
+      - post-db
+      - comment-db
